@@ -18,7 +18,7 @@ A powerful custom n8n node that allows you to generate embeddings using your own
 
 ### Option 1: npm Installation
 ```bash
-npm install @original-land/n8n-nodes-original-embedding
+npm install @original-land/n8n-nodes-original-embed
 ```
 
 ### Option 2: Manual Installation
