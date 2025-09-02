@@ -109,7 +109,7 @@ jobs:
 
             ### Installation
             ```bash
-            pnpm add @original-land/n8n-original-embedding@${{ steps.version.outputs.version_number }}
+            pnpm add @original-land/n8n-nodes-original-embedding@${{ steps.version.outputs.version_number }}
             ```
 
             ### What's Changed
@@ -122,5 +122,5 @@ jobs:
       - name: Notify completion
         run: |
           echo "✅ Release ${{ steps.version.outputs.new_version }} completed successfully!"
-          echo "📦 Published to NPM: https://www.npmjs.com/package/@original-land/n8n-original-embedding"
+          echo "📦 Published to NPM: https://www.npmjs.com/package/@original-land/n8n-nodes-original-embedding"
           echo "🏷️ GitHub Release: https://github.com/noku-team/n8n-original-embedding/releases/tag/${{ steps.version.outputs.new_version }}"

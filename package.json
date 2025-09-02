@@ -1,5 +1,5 @@
 {
-	"name": "@original-land/n8n-original-embedding",
+	"name": "@original-land/n8n-nodes-original-embedding",
 	"version": "0.1.0",
   "description": "Custom original.land embedding node for n8n",
 	"keywords": [
