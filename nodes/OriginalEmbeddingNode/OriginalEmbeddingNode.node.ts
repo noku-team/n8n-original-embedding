@@ -4,6 +4,8 @@ import type {
 	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
+	ISupplyDataFunctions,
+	SupplyData,
 } from 'n8n-workflow';
 import { NodeConnectionType, NodeOperationError } from 'n8n-workflow';
 
@@ -155,5 +157,63 @@ export class OriginalEmbeddingNode implements INodeType {
 		}
 
 		return [returnData];
+	}
+
+	// Supply data method for AI context usage
+	async supplyData(this: ISupplyDataFunctions, itemIndex: number): Promise<SupplyData> {
+		// Get parameters
+		const endpoint = this.getNodeParameter('endpoint', itemIndex, '') as string;
+		const model = this.getNodeParameter('model', itemIndex, 'query') as string;
+		const inputText = this.getNodeParameter('inputText', itemIndex, '') as string;
+
+		if (!endpoint) {
+			throw new NodeOperationError(this.getNode(), 'Endpoint URL is required', {
+				itemIndex,
+			});
+		}
+
+		if (!inputText) {
+			throw new NodeOperationError(this.getNode(), 'Input text is required', {
+				itemIndex,
+			});
+		}
+
+		// Prepare HTTP request
+		const requestOptions: IHttpRequestOptions = {
+			method: 'POST',
+			url: endpoint,
+			body: {
+				input: inputText,
+				model: model,
+			},
+			json: true,
+		};
+
+		// Make the HTTP request with credentials
+		const response = await this.helpers.httpRequestWithAuthentication.call(
+			this,
+			'embeddingServerApi',
+			requestOptions,
+		);
+
+		// Process the response for supplyData
+		if (response && response.data && Array.isArray(response.data)) {
+			const embeddingData = response.data[0]; // Take the first embedding
+
+			return {
+				response: {
+					embedding: embeddingData.embedding,
+					text: inputText,
+					model: response.model,
+					usage: response.usage,
+					index: embeddingData.index || 0,
+					object: embeddingData.object || 'embedding',
+				}
+			};
+		} else {
+			throw new NodeOperationError(this.getNode(), 'Invalid response format from embedding server', {
+				itemIndex,
+			});
+		}
 	}
 }
