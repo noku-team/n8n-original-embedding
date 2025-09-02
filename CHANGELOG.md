@@ -1,3 +1,7 @@
+## [0.1.8](https://github.com/noku-team/n8n-original-embedding/compare/v0.1.7...v0.1.8) (2025-09-02)
+
+
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
