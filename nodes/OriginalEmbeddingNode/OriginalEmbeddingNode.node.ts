@@ -112,6 +112,8 @@ export class OriginalEmbeddingNode implements INodeType {
 					requestOptions,
 				);
 
+				console.log(response);
+
 				// Process the response
 				if (response && response.data && Array.isArray(response.data)) {
 					// For AI embeddings, we should return the original item with the embedding data
