@@ -7,10 +7,10 @@
 	],
 	"license": "MIT",
 	"homepage": "",
-	"author": {
-		"name": "",
-		"email": ""
-	},
+  "author": {
+    "name": "info@original.land",
+    "email": "info@original.land"
+  },
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/noku-team/n8n-original-embedding"
