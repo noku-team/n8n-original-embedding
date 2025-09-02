@@ -1,7 +1,7 @@
 {
 	"name": "@original-land/n8n-nodes-original-embedding",
-	"version": "0.1.1",
-  "description": "Custom original.land embedding node for n8n",
+	"version": "0.1.2",
+	"description": "Custom original.land embedding node for n8n",
 	"keywords": [
 		"n8n-community-node-package"
 	],
