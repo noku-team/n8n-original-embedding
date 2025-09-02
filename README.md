@@ -1,48 +1,236 @@
-![Banner image](https://user-images.githubusercontent.com/10284570/173569848-c624317f-42b1-45a6-ab09-f0ea3c247648.png)
+# 🚀 Original Embedding Node for n8n
 
-# n8n-nodes-starter
+[![npm version](https://badge.fury.io/js/%40original-land%2Fn8n-nodes-original-embedding.svg)](https://badge.fury.io/js/%40original-land%2Fn8n-nodes-original-embedding)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-This repo contains example nodes to help you get started building your own custom integrations for [n8n](https://n8n.io). It includes the node linter and other dependencies.
+A powerful custom n8n node that allows you to generate embeddings using your own embedding server. Perfect for RAG (Retrieval-Augmented Generation) workflows, semantic search, and AI applications.
 
-To make your custom node available to the community, you must create it as an npm package, and [submit it to the npm registry](https://docs.npmjs.com/packages-and-modules/contributing-packages-to-the-registry).
+## 🌟 Features
 
-If you would like your node to be available on n8n cloud you can also [submit your node for verification](https://docs.n8n.io/integrations/creating-nodes/deploy/submit-community-nodes/).
+- 🔧 **Custom Embedding Server**: Connect to any OpenAI-compatible embedding API
+- 🔐 **Flexible Authentication**: Support for API Key, Basic Auth, or both combined  
+- 🧠 **RAG Compatible**: Seamlessly integrates with n8n's AI ecosystem (Vector Stores, Retrievers, etc.)
+- ⚡ **Batch Processing**: Optional batch processing for improved performance
+- 🔄 **Standard Compliance**: Full compatibility with n8n's `ai_embedding` connection type
+- 🛡️ **Secure**: Encrypted credential storage with multiple authentication methods
 
-## Prerequisites
+## 📦 Installation
 
-You need the following installed on your development machine:
+### Option 1: npm Installation
+```bash
+npm install @original-land/n8n-nodes-original-embedding
+```
 
-* [git](https://git-scm.com/downloads)
-* Node.js and npm. Minimum version Node 20. You can find instructions on how to install both using nvm (Node Version Manager) for Linux, Mac, and WSL [here](https://github.com/nvm-sh/nvm). For Windows users, refer to Microsoft's guide to [Install NodeJS on Windows](https://docs.microsoft.com/en-us/windows/dev-environment/javascript/nodejs-on-windows).
-* Install n8n with:
+### Option 2: Manual Installation
+1. Download the latest release
+2. Extract to your n8n custom nodes directory
+3. Restart n8n
+
+### Option 3: From Source
+```bash
+git clone https://github.com/noku-team/n8n-original-embedding.git
+cd n8n-original-embedding
+pnpm install
+pnpm build
+```
+
+## ⚙️ Configuration
+
+### 1. Setup Credentials
+
+Create new **Embedding Server API** credentials with:
+
+#### Authentication Methods:
+- **API Key Only**: For servers requiring only API key authentication
+- **Basic Auth Only**: For servers using username/password
+- **API Key + Basic Auth**: For servers requiring both (recommended)
+
+#### Fields:
+- **Authentication Method**: Choose your server's auth requirements
+- **API Key**: Your embedding server API key (if applicable)
+- **Username**: Basic auth username (if applicable)  
+- **Password**: Basic auth password (if applicable)
+
+### 2. Node Configuration
+
+- **Endpoint URL**: Your embedding server endpoint
   ```
-  npm install n8n -g
+  https://your-server.com/api/v1/openai-compatible/embeddings
   ```
-* Recommended: follow n8n's guide to [set up your development environment](https://docs.n8n.io/integrations/creating-nodes/build/node-development-environment/).
+- **Model**: The embedding model to use (e.g., `query`, `document`)
+- **Input Text**: Text to embed (supports n8n expressions like `={{ $json.text }}`)
+- **Batch Processing**: Enable for processing multiple texts efficiently
 
-## Using this starter
+## 🔄 Usage Examples
 
-These are the basic steps for working with the starter. For detailed guidance on creating and publishing nodes, refer to the [documentation](https://docs.n8n.io/integrations/creating-nodes/).
+### Basic Text Embedding
+```json
+Input: {
+  "text": "This is a sample text to embed"
+}
 
-1. [Generate a new repository](https://github.com/n8n-io/n8n-nodes-starter/generate) from this template repository.
-2. Clone your new repo:
+Output: {
+  "text": "This is a sample text to embed",
+  "embedding": [0.1, 0.2, -0.3, ...],
+  "model": "your-model",
+  "usage": { "prompt_tokens": 7, "total_tokens": 7 }
+}
+```
+
+### RAG Workflow Integration
+
+```mermaid
+graph LR
+    A[Document Loader] --> B[Original Embedding Node]
+    B --> C[Vector Store]
+    
+    D[User Query] --> E[Original Embedding Node]
+    E --> F[AI Retriever]
+    C --> F
+    
+    F --> G[RAG Chain]
+    H[LLM Node] --> G
+    G --> I[Response]
+```
+
+#### Example RAG Setup:
+1. **Document Processing**:
    ```
-   git clone https://github.com/<your organization>/<your-repo-name>.git
+   Document → Original Embedding Node → Vector Store (Pinecone/Weaviate)
    ```
-3. Run `npm i` to install dependencies.
-4. Open the project in your editor.
-5. Browse the examples in `/nodes` and `/credentials`. Modify the examples, or replace them with your own nodes.
-6. Update the `package.json` to match your details.
-7. Run `npm run lint` to check for errors or `npm run lintfix` to automatically fix errors when possible.
-8. Test your node locally. Refer to [Run your node locally](https://docs.n8n.io/integrations/creating-nodes/test/run-node-locally/) for guidance.
-9. Replace this README with documentation for your node. Use the [README_TEMPLATE](README_TEMPLATE.md) to get started.
-10. Update the LICENSE file to use your details.
-11. [Publish](https://docs.npmjs.com/packages-and-modules/contributing-packages-to-the-registry) your package to npm.
 
-## More information
+2. **Query Processing**:
+   ```
+   User Query → Original Embedding Node → AI Retriever → RAG Chain → LLM → Response
+   ```
 
-Refer to our [documentation on creating nodes](https://docs.n8n.io/integrations/creating-nodes/) for detailed information on building your own nodes.
+### Advanced Configuration Example
 
-## License
+```javascript
+// Node parameters
+{
+  "endpoint": "https://api.yourserver.com/v1/embeddings",
+  "model": "text-embedding-3-large", 
+  "inputText": "={{ $json.content }}",
+  "batchProcessing": true
+}
 
-[MIT](https://github.com/n8n-io/n8n-nodes-starter/blob/master/LICENSE.md)
+// Credential configuration  
+{
+  "authMethod": "both",
+  "apiKey": "your-secret-key",
+  "username": "your-username", 
+  "password": "your-password"
+}
+```
+
+## 🔗 Compatibility
+
+### Input Connections
+- ✅ **Main nodes**: Any standard n8n node outputting data
+
+### Output Connections  
+- ✅ **AI Vector Stores**: Pinecone, Weaviate, Chroma, etc.
+- ✅ **AI Retrievers**: For similarity search
+- ✅ **AI Chains**: RAG chains, conversation chains
+- ✅ **Other AI nodes**: Any node accepting `ai_embedding` type
+
+### Supported n8n Versions
+- n8n v1.0.0+
+- Node.js 20.15+
+
+## 🛠️ Development
+
+### Prerequisites
+- Node.js ≥ 20.15
+- pnpm (recommended) or npm
+- n8n development environment
+
+### Setup
+```bash
+git clone https://github.com/noku-team/n8n-original-embedding.git
+cd n8n-original-embedding
+pnpm install
+```
+
+### Build
+```bash
+pnpm build
+```
+
+### Development Mode
+```bash
+pnpm dev
+```
+
+### Linting
+```bash
+pnpm lint          # Check for issues
+pnpm lintfix       # Auto-fix issues
+```
+
+## 🔧 API Compatibility
+
+Your embedding server should be OpenAI-compatible and support:
+
+### Request Format
+```json
+POST /your-endpoint
+{
+  "input": "text to embed",
+  "model": "your-model"
+}
+```
+
+### Response Format  
+```json
+{
+  "object": "list",
+  "data": [{
+    "object": "embedding", 
+    "index": 0,
+    "embedding": [0.1, 0.2, -0.3, ...]
+  }],
+  "model": "your-model",
+  "usage": {
+    "prompt_tokens": 5,
+    "total_tokens": 5
+  }
+}
+```
+
+### Authentication Headers
+The node automatically handles:
+- `Authorization: your-api-key` (API Key mode)
+- `Authorization: Basic base64(username:password)` (Basic Auth mode)  
+- Both headers simultaneously (Combined mode)
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📝 Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for version history.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+
+## 🆘 Support
+
+- **Documentation**: [n8n Custom Nodes Guide](https://docs.n8n.io/integrations/creating-nodes/)
+- **Issues**: [GitHub Issues](https://github.com/noku-team/n8n-original-embedding/issues)
+- **Community**: [n8n Discord](https://discord.gg/n8n)
+
+## 🏷️ Keywords
+
+`n8n` `embedding` `ai` `rag` `vector-search` `custom-node` `openai` `machine-learning` `semantic-search`
+
+---
+
+Made with ❤️ by [Original.land](https://original.land)
