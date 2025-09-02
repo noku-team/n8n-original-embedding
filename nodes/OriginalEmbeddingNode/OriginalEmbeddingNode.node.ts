@@ -164,56 +164,78 @@ export class OriginalEmbeddingNode implements INodeType {
 		// Get parameters
 		const endpoint = this.getNodeParameter('endpoint', itemIndex, '') as string;
 		const model = this.getNodeParameter('model', itemIndex, 'query') as string;
-		const inputText = this.getNodeParameter('inputText', itemIndex, '') as string;
 
 		if (!endpoint) {
-			throw new NodeOperationError(this.getNode(), 'Endpoint URL is required', {
-				itemIndex,
-			});
+			throw new NodeOperationError(this.getNode(), 'Endpoint URL is required');
 		}
 
-		if (!inputText) {
-			throw new NodeOperationError(this.getNode(), 'Input text is required', {
-				itemIndex,
-			});
-		}
+		// Create embeddings object with embedQuery method
+		const embeddings = {
+			embedQuery: async (text: string) => {
+				// Prepare HTTP request
+				const requestOptions: IHttpRequestOptions = {
+					method: 'POST',
+					url: endpoint,
+					body: {
+						input: text,
+						model: model,
+					},
+					json: true,
+				};
 
-		// Prepare HTTP request
-		const requestOptions: IHttpRequestOptions = {
-			method: 'POST',
-			url: endpoint,
-			body: {
-				input: inputText,
-				model: model,
+				// Make the HTTP request with credentials
+				const response = await this.helpers.httpRequestWithAuthentication.call(
+					this,
+					'embeddingServerApi',
+					requestOptions,
+				);
+
+				// Process the response
+				if (response && response.data && Array.isArray(response.data)) {
+					const embeddingData = response.data[0];
+					return embeddingData.embedding;
+				} else {
+					throw new NodeOperationError(this.getNode(), 'Invalid response format from embedding server');
+				}
 			},
-			json: true,
+
+			embedDocuments: async (documents: string[]) => {
+				const embeddings: number[][] = [];
+
+				for (const document of documents) {
+					// Prepare HTTP request
+					const requestOptions: IHttpRequestOptions = {
+						method: 'POST',
+						url: endpoint,
+						body: {
+							input: document,
+							model: model,
+						},
+						json: true,
+					};
+
+					// Make the HTTP request with credentials
+					const response = await this.helpers.httpRequestWithAuthentication.call(
+						this,
+						'embeddingServerApi',
+						requestOptions,
+					);
+
+					// Process the response
+					if (response && response.data && Array.isArray(response.data)) {
+						const embeddingData = response.data[0];
+						embeddings.push(embeddingData.embedding);
+					} else {
+						throw new NodeOperationError(this.getNode(), 'Invalid response format from embedding server');
+					}
+				}
+
+				return embeddings;
+			}
 		};
 
-		// Make the HTTP request with credentials
-		const response = await this.helpers.httpRequestWithAuthentication.call(
-			this,
-			'embeddingServerApi',
-			requestOptions,
-		);
-
-		// Process the response for supplyData
-		if (response && response.data && Array.isArray(response.data)) {
-			const embeddingData = response.data[0]; // Take the first embedding
-
-			return {
-				response: {
-					embedding: embeddingData.embedding,
-					text: inputText,
-					model: response.model,
-					usage: response.usage,
-					index: embeddingData.index || 0,
-					object: embeddingData.object || 'embedding',
-				}
-			};
-		} else {
-			throw new NodeOperationError(this.getNode(), 'Invalid response format from embedding server', {
-				itemIndex,
-			});
-		}
+		return {
+			response: embeddings,
+		};
 	}
 }
