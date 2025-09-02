@@ -56,8 +56,12 @@ export class OriginalEmbeddingNode implements INodeType {
 				type: 'string',
 				default: '={{ $json.text }}',
 				placeholder: 'Enter text to embed or use an expression',
-				description: 'The text to generate embeddings for',
-				required: true,
+				description: 'The text to generate embeddings for (used only in standard workflows, not in RAG contexts)',
+				displayOptions: {
+					show: {
+						'@version': [1]
+					}
+				},
 				typeOptions: {
 					rows: 4,
 				},
