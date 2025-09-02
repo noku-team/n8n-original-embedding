@@ -12,6 +12,10 @@ export class OriginalEmbeddingNode implements INodeType {
 		displayName: 'Original Embedding Node',
 		name: 'originalEmbeddingNode',
 		group: ['ai'],
+		icon: {
+			dark: 'file:original.svg',
+			light: 'file:original.svg',
+		},
 		version: 1,
 		description: 'Generate embeddings using a custom embedding server',
 		defaults: {
