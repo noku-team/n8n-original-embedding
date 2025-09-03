@@ -42,30 +42,8 @@ export class OriginalEmbeddingNode implements INodeType {
 				description: 'The endpoint URL of your embedding server',
 				required: true,
 			},
-			{
-				displayName: 'Model',
-				name: 'model',
-				type: 'string',
-				default: 'query',
-				description: 'The model to use for embeddings',
-				required: true,
-			},
-			{
-				displayName: 'Input Text',
-				name: 'inputText',
-				type: 'string',
-				default: '={{ $json.text }}',
-				placeholder: 'Enter text to embed or use an expression',
-				description: 'The text to generate embeddings for (used only in standard workflows, not in RAG contexts)',
-				displayOptions: {
-					show: {
-						'@version': [1]
-					}
-				},
-				typeOptions: {
-					rows: 4,
-				},
-			},
+
+
 			{
 				displayName: 'Batch Processing',
 				name: 'batchProcessing',
@@ -85,8 +63,7 @@ export class OriginalEmbeddingNode implements INodeType {
 			try {
 				// Get parameters
 				const endpoint = this.getNodeParameter('endpoint', itemIndex, '') as string;
-				const model = this.getNodeParameter('model', itemIndex, 'query') as string;
-				const inputText = this.getNodeParameter('inputText', itemIndex, '') as string;
+				const item = items[itemIndex];
 
 				if (!endpoint) {
 					throw new NodeOperationError(this.getNode(), 'Endpoint URL is required', {
@@ -94,46 +71,86 @@ export class OriginalEmbeddingNode implements INodeType {
 					});
 				}
 
-				if (!inputText) {
-					throw new NodeOperationError(this.getNode(), 'Input text is required', {
-						itemIndex,
-					});
-				}
+				// Determine input type and model automatically based on input structure
+				let model: string;
+				let inputContent: string | string[];
+				let allEmbeddings: number[][] = [];
 
-				// Prepare HTTP request
-				const requestOptions: IHttpRequestOptions = {
-					method: 'POST',
-					url: endpoint,
-					body: {
-						input: inputText,
-						model: model,
-					},
-					json: true,
-				};
+				if (item.json.query !== undefined) {
+					// Query mode: single query embedding
+					model = 'query';
+					inputContent = item.json.query as string;
 
-				// Make the HTTP request with credentials
-				const response = await this.helpers.httpRequestWithAuthentication.call(
-					this,
-					'embeddingServerApi',
-					requestOptions,
-				);
-
-				// Process the response
-				if (response && response.data && Array.isArray(response.data)) {
-					const embeddingData = response.data[0]; // Take the first embedding
-
-					// Return in the specific format requested by user
-					returnData.push({
-						json: {
-							response: [embeddingData.embedding] // Array of embedding vectors
+					const requestOptions: IHttpRequestOptions = {
+						method: 'POST',
+						url: endpoint,
+						body: {
+							input: inputContent,
+							model: model,
 						},
-						pairedItem: itemIndex,
-					});
+						json: true,
+					};
+
+					const response = await this.helpers.httpRequestWithAuthentication.call(
+						this,
+						'embeddingServerApi',
+						requestOptions,
+					);
+
+					if (response && response.data && Array.isArray(response.data)) {
+						const embeddingData = response.data[0];
+						allEmbeddings.push(embeddingData.embedding);
+					} else {
+						throw new NodeOperationError(this.getNode(), 'Invalid response format from embedding server', {
+							itemIndex,
+						});
+					}
+
+				} else if (item.json.documents !== undefined && Array.isArray(item.json.documents)) {
+					// Documents mode: multiple document embeddings
+					model = 'doc';
+					inputContent = item.json.documents as string[];
+
+					// Process each document
+					for (const document of inputContent) {
+						const requestOptions: IHttpRequestOptions = {
+							method: 'POST',
+							url: endpoint,
+							body: {
+								input: document,
+								model: model,
+							},
+							json: true,
+						};
+
+						const response = await this.helpers.httpRequestWithAuthentication.call(
+							this,
+							'embeddingServerApi',
+							requestOptions,
+						);
+
+						if (response && response.data && Array.isArray(response.data)) {
+							const embeddingData = response.data[0];
+							allEmbeddings.push(embeddingData.embedding);
+						} else {
+							throw new NodeOperationError(this.getNode(), 'Invalid response format from embedding server', {
+								itemIndex,
+							});
+						}
+					}
 				} else {
-					throw new NodeOperationError(this.getNode(), 'Invalid response format from embedding server', {
+					throw new NodeOperationError(this.getNode(), 'Invalid input format. Expected {query: string} or {documents: string[]}', {
 						itemIndex,
 					});
 				}
+
+				// Return all embeddings in the specified format
+				returnData.push({
+					json: {
+						response: allEmbeddings
+					},
+					pairedItem: itemIndex,
+				});
 			} catch (error) {
 				if (this.continueOnFail()) {
 					returnData.push({
@@ -160,7 +177,6 @@ export class OriginalEmbeddingNode implements INodeType {
 	async supplyData(this: ISupplyDataFunctions, itemIndex: number): Promise<SupplyData> {
 		// Get parameters
 		const endpoint = this.getNodeParameter('endpoint', itemIndex, '') as string;
-		const model = this.getNodeParameter('model', itemIndex, 'query') as string;
 
 		if (!endpoint) {
 			throw new NodeOperationError(this.getNode(), 'Endpoint URL is required');
@@ -169,13 +185,13 @@ export class OriginalEmbeddingNode implements INodeType {
 		// Create embeddings object with embedQuery method
 		const embeddings = {
 			embedQuery: async (text: string) => {
-				// Prepare HTTP request
+				// Prepare HTTP request with query model
 				const requestOptions: IHttpRequestOptions = {
 					method: 'POST',
 					url: endpoint,
 					body: {
 						input: text,
-						model: model,
+						model: 'query', // Fixed model for queries
 					},
 					json: true,
 				};
@@ -197,16 +213,16 @@ export class OriginalEmbeddingNode implements INodeType {
 			},
 
 			embedDocuments: async (documents: string[]) => {
-				const embeddings: number[][] = [];
+				const embeddingResults: number[][] = [];
 
 				for (const document of documents) {
-					// Prepare HTTP request
+					// Prepare HTTP request with doc model
 					const requestOptions: IHttpRequestOptions = {
 						method: 'POST',
 						url: endpoint,
 						body: {
 							input: document,
-							model: model,
+							model: 'doc', // Fixed model for documents
 						},
 						json: true,
 					};
@@ -221,13 +237,13 @@ export class OriginalEmbeddingNode implements INodeType {
 					// Process the response
 					if (response && response.data && Array.isArray(response.data)) {
 						const embeddingData = response.data[0];
-						embeddings.push(embeddingData.embedding);
+						embeddingResults.push(embeddingData.embedding);
 					} else {
 						throw new NodeOperationError(this.getNode(), 'Invalid response format from embedding server');
 					}
 				}
 
-				return embeddings;
+				return embeddingResults;
 			}
 		};
 
