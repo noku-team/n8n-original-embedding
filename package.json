@@ -42,7 +42,7 @@
 			"dist/credentials/EmbeddingServerApi.credentials.js"
 		],
 		"nodes": [
-			"dist/nodes/OriginalEmbedding/OriginalEmbedding.node.js"
+			"dist/nodes/OriginalEmbeddingNode/OriginalEmbeddingNode.node.js"
 		]
 	},
 	"devDependencies": {
