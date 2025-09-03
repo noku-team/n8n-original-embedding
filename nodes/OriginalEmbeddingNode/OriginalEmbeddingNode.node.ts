@@ -118,21 +118,14 @@ export class OriginalEmbeddingNode implements INodeType {
 					requestOptions,
 				);
 
-				console.log(response);
-
 				// Process the response
 				if (response && response.data && Array.isArray(response.data)) {
-					// For AI embeddings, we should return the original item with the embedding data
-					const item = items[itemIndex];
 					const embeddingData = response.data[0]; // Take the first embedding
 
+					// Return in the specific format requested by user
 					returnData.push({
 						json: {
-							...item.json, // Preserve original data
-							embedding: embeddingData.embedding,
-							text: inputText, // Store the text that was embedded
-							model: response.model,
-							usage: response.usage,
+							response: [embeddingData.embedding] // Array of embedding vectors
 						},
 						pairedItem: itemIndex,
 					});
