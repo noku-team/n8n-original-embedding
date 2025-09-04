@@ -28,7 +28,7 @@ export class EmbeddingServerApi implements ICredentialType {
 		type: 'generic',
 		properties: {
 			headers: {
-				Authorization: 'Bearer ={{ $credentials.apiKey }}',
+				Authorization: '=Bearer {{ $credentials.apiKey }}',
 				'Content-Type': 'application/json',
 			},
 		},
@@ -36,7 +36,7 @@ export class EmbeddingServerApi implements ICredentialType {
 
 	test: ICredentialTestRequest = {
 		request: {
-			url: 'https://httpbin.org/status/200',
+			url: 'https://httpbin.org/headers',
 			method: 'GET',
 		},
 	};

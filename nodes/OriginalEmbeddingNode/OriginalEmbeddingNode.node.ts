@@ -96,6 +96,15 @@ export class OriginalEmbeddingNode implements INodeType {
 						json: true,
 					};
 
+					// Debug: Log request details
+					console.log('🔧 Making embedding request:', {
+						endpoint,
+						model,
+						text,
+						textLength: text.length,
+						requestMethod: 'POST',
+					});
+
 					const response = await this.helpers.httpRequestWithAuthentication.call(
 						this,
 						'embeddingServerApi',
@@ -208,6 +217,14 @@ export class OriginalEmbeddingNode implements INodeType {
 					},
 					json: true,
 				};
+
+				// Debug: Log supplyData query request
+				console.log('🤖 SupplyData embedQuery request:', {
+					endpoint,
+					text,
+					model: 'query',
+					textLength: text.length,
+				});
 
 				// Make the HTTP request with credentials
 				const response = await this.helpers.httpRequestWithAuthentication.call(
