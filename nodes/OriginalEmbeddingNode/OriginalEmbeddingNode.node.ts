@@ -39,7 +39,7 @@ export class OriginalEmbeddingNode implements INodeType {
 			resources: {
 				primaryDocumentation: [
 					{
-						url: 'https://docs.n8n.io/integrations/builtin/cluster-nodes/sub-nodes/n8n-nodes-base.embeddings',
+						url: 'https://www.npmjs.com/package/@original-land/n8n-nodes-embedding',
 					},
 				],
 			},
