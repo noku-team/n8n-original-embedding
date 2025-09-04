@@ -1,8 +1,8 @@
 import {
-    IAuthenticateGeneric,
-    ICredentialTestRequest,
-    ICredentialType,
-    INodeProperties,
+	IAuthenticateGeneric,
+	ICredentialTestRequest,
+	ICredentialType,
+	INodeProperties,
 } from 'n8n-workflow';
 
 export class EmbeddingServerApi implements ICredentialType {
