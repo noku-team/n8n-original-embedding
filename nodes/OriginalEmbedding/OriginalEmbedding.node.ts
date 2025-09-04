@@ -11,8 +11,8 @@ import { NodeConnectionType, NodeOperationError } from 'n8n-workflow';
 
 export class OriginalEmbeddingNode implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'Original Embedding Node',
-		name: 'originalEmbeddingNode',
+		displayName: 'Original Embedding',
+		name: 'originalEmbedding',
 		group: ['ai'],
 		icon: {
 			dark: 'file:original.svg',
@@ -21,7 +21,7 @@ export class OriginalEmbeddingNode implements INodeType {
 		version: 1,
 		description: 'Generate embeddings using a custom embedding server',
 		defaults: {
-			name: 'Original Embedding Node',
+			name: 'Original Embedding',
 		},
 		inputs: [NodeConnectionType.Main],
 		outputs: [NodeConnectionType.AiEmbedding],
@@ -31,6 +31,19 @@ export class OriginalEmbeddingNode implements INodeType {
 				required: true,
 			},
 		],
+		codex: {
+			categories: ['AI'],
+			subcategories: {
+				AI: ['Embeddings'],
+			},
+			resources: {
+				primaryDocumentation: [
+					{
+						url: 'https://docs.n8n.io/integrations/builtin/cluster-nodes/sub-nodes/n8n-nodes-base.embeddings',
+					},
+				],
+			},
+		},
 		usableAsTool: true,
 		properties: [
 			{
@@ -193,50 +206,17 @@ export class OriginalEmbeddingNode implements INodeType {
 			throw new NodeOperationError(this.getNode(), 'Endpoint URL is required');
 		}
 
-		// Create embeddings object with embedQuery method
-		const embeddings = {
-			embedQuery: async (text: string) => {
-				// Prepare HTTP request with query model
-				const requestOptions: IHttpRequestOptions = {
-					method: 'POST',
-					url: endpoint,
-					body: {
-						input: text,
-						model: 'query', // Fixed model for queries
-					},
-					json: true,
-				};
-
-				// Make the HTTP request with credentials
-				const response = await this.helpers.httpRequestWithAuthentication.call(
-					this,
-					'embeddingServerApi',
-					requestOptions,
-				);
-
-				// Process the response
-				if (response && response.data && Array.isArray(response.data)) {
-					const embeddingData = response.data[0];
-					return embeddingData.embedding;
-				} else {
-					throw new NodeOperationError(
-						this.getNode(),
-						'Invalid response format from embedding server',
-					);
-				}
-			},
-
-			embedDocuments: async (documents: string[]) => {
-				const embeddingResults: number[][] = [];
-
-				for (const document of documents) {
-					// Prepare HTTP request with doc model
+		// Return the embeddings interface that RAG expects
+		return {
+			response: {
+				embedQuery: async (text: string) => {
+					// Prepare HTTP request with query model
 					const requestOptions: IHttpRequestOptions = {
 						method: 'POST',
 						url: endpoint,
 						body: {
-							input: document,
-							model: 'doc', // Fixed model for documents
+							input: text,
+							model: 'query', // Fixed model for queries
 						},
 						json: true,
 					};
@@ -251,21 +231,49 @@ export class OriginalEmbeddingNode implements INodeType {
 					// Process the response
 					if (response && response.data && Array.isArray(response.data)) {
 						const embeddingData = response.data[0];
-						embeddingResults.push(embeddingData.embedding);
+						return embeddingData.embedding;
 					} else {
 						throw new NodeOperationError(
 							this.getNode(),
 							'Invalid response format from embedding server',
 						);
 					}
+				},
+
+				embedDocuments: async (documents: string[]) => {
+					const embeddingResults: number[][] = [];
+
+					for (const document of documents) {
+						// Prepare HTTP request with doc model
+						const requestOptions: IHttpRequestOptions = {
+							method: 'POST',
+							url: endpoint,
+							body: {
+								input: document,
+								model: 'doc', // Fixed model for documents
+							},
+							json: true,
+						};
+
+						// Make the HTTP request with credentials
+						const response = await this.helpers.httpRequestWithAuthentication.call(
+							this,
+							'embeddingServerApi',
+							requestOptions,
+						);
+
+						// Process the response
+						if (response && response.data && Array.isArray(response.data)) {
+							const embeddingData = response.data[0];
+							embeddingResults.push(embeddingData.embedding);
+						} else {
+							throw new NodeOperationError(this.getNode(), 'Invalid response format from embedding server');
+						}
+					}
+
+					return embeddingResults;
 				}
-
-				return embeddingResults;
-			},
-		};
-
-		return {
-			response: embeddings,
+			}
 		};
 	}
 }
