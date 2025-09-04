@@ -267,13 +267,16 @@ export class OriginalEmbeddingNode implements INodeType {
 							const embeddingData = response.data[0];
 							embeddingResults.push(embeddingData.embedding);
 						} else {
-							throw new NodeOperationError(this.getNode(), 'Invalid response format from embedding server');
+							throw new NodeOperationError(
+								this.getNode(),
+								'Invalid response format from embedding server',
+							);
 						}
 					}
 
 					return embeddingResults;
-				}
-			}
+				},
+			},
 		};
 	}
 }
