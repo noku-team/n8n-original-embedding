@@ -11,8 +11,8 @@ import { NodeConnectionType, NodeOperationError } from 'n8n-workflow';
 
 export class OriginalEmbeddingNode implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'Original Embedding',
-		name: 'originalEmbedding',
+		displayName: 'Original Embedding Node',
+		name: 'originalEmbeddingNode',
 		group: ['ai'],
 		icon: {
 			dark: 'file:original.svg',
@@ -21,7 +21,7 @@ export class OriginalEmbeddingNode implements INodeType {
 		version: 1,
 		description: 'Generate embeddings using a custom embedding server',
 		defaults: {
-			name: 'Original Embedding',
+			name: 'Original Embedding Node',
 		},
 		inputs: [NodeConnectionType.Main],
 		outputs: [NodeConnectionType.AiEmbedding],
