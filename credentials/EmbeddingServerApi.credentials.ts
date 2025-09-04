@@ -82,12 +82,15 @@ export class EmbeddingServerApi implements ICredentialType {
 		type: 'generic',
 		properties: {
 			headers: {
-				'Authorization': '={{ $credentials.authMethod === "apiKey" || $credentials.authMethod === "both" ? $credentials.apiKey : undefined }}',
+				Authorization:
+					'={{ $credentials.authMethod === "apiKey" || $credentials.authMethod === "both" ? $credentials.apiKey : undefined }}',
 				'Content-Type': 'application/json',
 			},
 			auth: {
-				username: '={{ $credentials.authMethod === "basicAuth" || $credentials.authMethod === "both" ? $credentials.username : undefined }}',
-				password: '={{ $credentials.authMethod === "basicAuth" || $credentials.authMethod === "both" ? $credentials.password : undefined }}',
+				username:
+					'={{ $credentials.authMethod === "basicAuth" || $credentials.authMethod === "both" ? $credentials.username : undefined }}',
+				password:
+					'={{ $credentials.authMethod === "basicAuth" || $credentials.authMethod === "both" ? $credentials.password : undefined }}',
 			},
 		},
 	};

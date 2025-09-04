@@ -43,13 +43,13 @@ export class OriginalEmbeddingNode implements INodeType {
 				required: true,
 			},
 
-
 			{
 				displayName: 'Batch Processing',
 				name: 'batchProcessing',
 				type: 'boolean',
 				default: false,
-				description: 'Whether to process multiple texts in a single API call for better performance',
+				description:
+					'Whether to process multiple texts in a single API call for better performance',
 			},
 		],
 	};
@@ -101,11 +101,14 @@ export class OriginalEmbeddingNode implements INodeType {
 						const embeddingData = response.data[0];
 						allEmbeddings.push(embeddingData.embedding);
 					} else {
-						throw new NodeOperationError(this.getNode(), 'Invalid response format from embedding server', {
-							itemIndex,
-						});
+						throw new NodeOperationError(
+							this.getNode(),
+							'Invalid response format from embedding server',
+							{
+								itemIndex,
+							},
+						);
 					}
-
 				} else if (item.json.documents !== undefined && Array.isArray(item.json.documents)) {
 					// Documents mode: multiple document embeddings
 					model = 'doc';
@@ -133,21 +136,29 @@ export class OriginalEmbeddingNode implements INodeType {
 							const embeddingData = response.data[0];
 							allEmbeddings.push(embeddingData.embedding);
 						} else {
-							throw new NodeOperationError(this.getNode(), 'Invalid response format from embedding server', {
-								itemIndex,
-							});
+							throw new NodeOperationError(
+								this.getNode(),
+								'Invalid response format from embedding server',
+								{
+									itemIndex,
+								},
+							);
 						}
 					}
 				} else {
-					throw new NodeOperationError(this.getNode(), 'Invalid input format. Expected {query: string} or {documents: string[]}', {
-						itemIndex,
-					});
+					throw new NodeOperationError(
+						this.getNode(),
+						'Invalid input format. Expected {query: string} or {documents: string[]}',
+						{
+							itemIndex,
+						},
+					);
 				}
 
 				// Return all embeddings in the specified format
 				returnData.push({
 					json: {
-						response: allEmbeddings
+						response: allEmbeddings,
 					},
 					pairedItem: itemIndex,
 				});
@@ -156,7 +167,7 @@ export class OriginalEmbeddingNode implements INodeType {
 					returnData.push({
 						json: this.getInputData(itemIndex)[0].json,
 						error,
-						pairedItem: itemIndex
+						pairedItem: itemIndex,
 					});
 				} else {
 					if (error.context) {
@@ -208,7 +219,10 @@ export class OriginalEmbeddingNode implements INodeType {
 					const embeddingData = response.data[0];
 					return embeddingData.embedding;
 				} else {
-					throw new NodeOperationError(this.getNode(), 'Invalid response format from embedding server');
+					throw new NodeOperationError(
+						this.getNode(),
+						'Invalid response format from embedding server',
+					);
 				}
 			},
 
@@ -239,12 +253,15 @@ export class OriginalEmbeddingNode implements INodeType {
 						const embeddingData = response.data[0];
 						embeddingResults.push(embeddingData.embedding);
 					} else {
-						throw new NodeOperationError(this.getNode(), 'Invalid response format from embedding server');
+						throw new NodeOperationError(
+							this.getNode(),
+							'Invalid response format from embedding server',
+						);
 					}
 				}
 
 				return embeddingResults;
-			}
+			},
 		};
 
 		return {
